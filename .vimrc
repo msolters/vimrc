@@ -2,11 +2,27 @@ execute pathogen#infect()
 filetype plugin on
 filetype indent on
 syntax on
+set modelines=1
+set modelineexpr
 au BufNewFile,BufRead *.ejs set filetype=jst
 au BufNewFile,BufRead Jenkinsfile set filetype=groovy
 au BufNewFile,BufRead Dockerfile.* set filetype=dockerfile
 au BufWritePre * %s/\s\{1,\}$//gce
 au FileType json set sw=2 ts=2
+
+colorscheme monokai-bold
+let NERDTreeMinimalUI=1
+let NERDTreeDirArrows=1
+let NERDTreeQuitOnOpen=1
+autocmd StdinReadPre * let s:std_in=1
+augroup NERD
+  au!
+  autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+  autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | wincmd p | endif
+  autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+augroup END
+let g:airline_theme="papercolor"
+let g:airline_powerline_fonts = 1
 
 function! NukeLhm()
     :%s/^ *.Lhm.Lhm::setAdapter($this->getAdapter());//
@@ -86,7 +102,7 @@ set incsearch
 
 set expandtab
 set smarttab
-set shiftwidth=4
+set shiftwidth=2
 set tabstop=4
 ""set et smarttab ts=4 sw=4 ai si
 set ai
@@ -227,6 +243,8 @@ vnoremap gb :<C-U>call Base64Decode(visualmode(), 1)<CR>
 nnoremap <silent> gB :set opfunc=Base64Encode<CR>g@
 vnoremap gB :<C-U>call Base64Encode(visualmode(), 1)<CR>
 
+map <C-n> :NERDTreeToggle<CR>
+
 function! Base64Decode(type, ...)
   let sel_save = &selection
   let &selection = "inclusive"
@@ -255,11 +273,11 @@ function! Base64Encode(type, ...)
 
   let &paste = 1
   if a:0  " Invoked from Visual mode, use gv command.
-    silent exe "normal! gv\"ac\<C-R>=system('printf %s \"$(echo -n \"' . @a  . '\" | base64)\"')\<CR>\<Esc>"
+    silent exe "normal! gv\"ac\<C-R>=substitute(system('base64', @a), \"\\n\", '', '')\<CR>\<Esc>"
   elseif a:type == 'line'
-    silent exe "normal! '[V']\"ac\<C-R>=system('printf %s \"$(echo -n \"' . @a  . '\" | base64)\"')\<CR>\<Esc>"
+    silent exe "normal! '[V']\"ac\<C-R>=substitute(system('base64', @a), \"\\n\", '', '')\<CR>\<Esc>"
   else
-    silent exe "normal! `[v`]\"ac\<C-R>=system('printf %s \"$(echo -n \"' . @a  . '\" | base64)\"')\<CR>\<Esc>"
+    silent exe "normal! `[v`]\"ac\<C-R>=substitute(system('base64', @a), \"\\n\", '', '')\<CR>\<Esc>"
   endif
 
   let &selection = sel_save
